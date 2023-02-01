@@ -1,6 +1,7 @@
+use std::str;
+
 use serde::{Deserialize, Serialize};
 use worker::*;
-use std::str;
 
 #[event(fetch)]
 pub async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
@@ -25,7 +26,7 @@ pub async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
                     Some(url) => {
                         let d1result = increment_link_clicks(key, &db).await?;
                         if !d1result.success() {
-                            println!("Error while updating clicks for link {key:}")
+                            console_log!("Error while updating clicks for link {key:}")
                         }
                         Response::redirect(Url::parse(url.as_str())?)
                     },
@@ -67,12 +68,8 @@ pub async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
                     .bind(&[result.key.as_str(), result.long_url.as_str(), result.clicks.to_string().as_str()])?;
 
                 return match statement.run().await {
-                    Ok(_) => {
-                        Response::ok("OK")
-                    }
-                    Err(err) => {
-                        Response::error(format!("Database error! {err:?}"), 500)
-                    }
+                    Ok(_) => Response::ok("OK"),
+                    Err(err) => Response::error(format!("Database error! {err:?}"), 500)
                 }
             }
 
@@ -91,12 +88,8 @@ pub async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
                     .bind(&[result.key.as_str(), result.long_url.as_str(), result.clicks.to_string().as_str(), result.long_url.as_str(), result.clicks.to_string().as_str()])?;
 
                 return match statement.run().await {
-                    Ok(_) => {
-                        Response::ok("OK")
-                    }
-                    Err(err) => {
-                        Response::error(format!("Database error! {err:?}"), 500)
-                    }
+                    Ok(_) => Response::ok("OK"),
+                    Err(err) => Response::error(format!("Database error! {err:?}"), 500)
                 }
             }
 
