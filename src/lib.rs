@@ -2,6 +2,7 @@ use std::str;
 
 use serde::{Deserialize, Serialize};
 use worker::*;
+use worker::wasm_bindgen::JsValue;
 
 #[event(fetch)]
 pub async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
@@ -15,7 +16,7 @@ pub async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
 
                 let statement = db
                     .prepare("SELECT long_url FROM links WHERE key =?")
-                    .bind(&[key])?;
+                    .bind(&[JsValue::from(key)])?;
 
                 let results: Option<String> = statement.first(Some("long_url")).await?;
 
@@ -40,7 +41,7 @@ pub async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
 
                 let statement = db
                     .prepare("SELECT * FROM links WHERE key = ?")
-                    .bind(&[key])?;
+                    .bind(&[JsValue::from(key)])?;
 
                 let results = statement.all().await?;
 
@@ -65,7 +66,7 @@ pub async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
 
                 let statement = db
                     .prepare("INSERT INTO links(`key`, `long_url`, `clicks`) VALUES (?,?,?)")
-                    .bind(&[result.key.as_str(), result.long_url.as_str(), result.clicks.to_string().as_str()])?;
+                    .bind(&[JsValue::from(result.key.as_str()), JsValue::from(result.long_url.as_str()), JsValue::from(result.clicks.to_string().as_str())])?;
 
                 return match statement.run().await {
                     Ok(_) => Response::ok("OK"),
@@ -85,7 +86,7 @@ pub async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
 
                 let statement = db
                     .prepare("INSERT INTO links(`key`, `long_url`, `clicks`) VALUES (?,?,?) ON CONFLICT(`key`) DO UPDATE SET `long_url` = ?, `clicks` = ?")
-                    .bind(&[result.key.as_str(), result.long_url.as_str(), result.clicks.to_string().as_str(), result.long_url.as_str(), result.clicks.to_string().as_str()])?;
+                    .bind(&[JsValue::from(result.key.as_str()), JsValue::from(result.long_url.as_str()), JsValue::from(result.clicks.to_string().as_str()), JsValue::from(result.long_url.as_str()), JsValue::from(result.clicks.to_string().as_str())])?;
 
                 return match statement.run().await {
                     Ok(_) => Response::ok("OK"),
@@ -101,7 +102,7 @@ pub async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
 
                 let statement = db
                     .prepare("DELETE FROM links WHERE key = ? ")
-                    .bind(&[key])?;
+                    .bind(&[JsValue::from(key)])?;
 
                 let results = statement.run().await?;
                 return if results.success() {
@@ -119,7 +120,7 @@ pub async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
 async fn increment_link_clicks(key: &String, database: &D1Database) -> Result<D1Result> {
     let statement = database
         .prepare("UPDATE links SET `clicks`=`clicks` + 1 WHERE `key` = ?")
-        .bind(&[key])?;
+        .bind(&[JsValue::from(key)])?;
 
     statement.run().await
 }

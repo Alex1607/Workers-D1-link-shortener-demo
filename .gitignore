@@ -9,3 +9,7 @@ build/
 /dist
 
 .idea/
+
+Cargo.lock
+cf-worker-linkshortener.iml
+package-lock.json
